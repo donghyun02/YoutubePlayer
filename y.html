@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>youtube play list</title>
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+        <script src="https://www.youtube.com/iframe_api"></script>
+
+        <style>
+            html, body {
+              height: 100%;
+            }
+
+            body {
+              margin-top: 0;
+              margin-left: 0;
+              margin-right: 0;
+              margin-bottom: 0;
+              background-color: rgb(228, 230, 234);
+            }
+
+            .header {
+              width: 100%;
+              height: 50px;
+              color: white;
+              font-family: arial;
+              font-size: 24px;
+              background-color: rgb(44, 67, 136);
+            }
+
+            .header span {
+              display: block;
+              padding-top: 10px;
+              padding-left: 10px;
+            }
+
+            .side-bar {
+              position: absolute;
+              display: inline-block;
+              width: 20%;
+              height: 93.4%;
+              overflow: scroll;
+              text-align: center;
+            }
+
+            input, button {
+              margin: 5px;
+            }
+
+            .container {
+              position: absolute;
+              display: inline-block;
+              left: 20%;
+              width: 80%;
+              height: 93.4%;
+            }
+        </style>
+    </head>
+    <body>
+
+        <div class="header">
+          <span>Youtube Player</span>
+        </div>
+
+        <div class="side-bar">
+            <form>
+                <input type="text" name="name" value="" id="name" placeholder="영상 이름">
+                <br>
+                <input type="text" id="video" placeholder="영상 ID">
+                <br>
+                <input type="submit" value="확인">
+            </form>
+            <button type="button" name="button" onclick="prevVideo()">prev</button>
+            <button type="button" name="button" onclick="nextVideo()">next</button>
+            <div id="box">
+            </div>
+        </div>
+
+        <div class="container">
+            <iframe id="p" src="" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+        </div>
+
+        <script>
+            var src = document.getElementById("p");
+            var playList = [];
+            var videoCnt = 0;
+            var nowVideo = 0;
+            var isFirst = true;
+            var i = 0;
+
+            function onYouTubeIframeAPIReady() {
+                var player = new YT.Player('p', {
+                    events: {
+                        'onReady': onPlayerReady,               // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
+                        'onStateChange': onPlayerStateChange    // 플레이어의 상태가 변경될 때마다 실행
+                    }
+                });
+            }
+
+            function onPlayerReady(event) {
+                event.target.playVideo();
+
+                if(isFirst) {
+                    isFirst = false;
+                    changeColor(0);
+                }
+            }
+
+            function onPlayerStateChange(event) {
+                console.log(event.target);
+                if(event.data == YT.PlayerState.ENDED) {
+                  event.target.clearVideo();
+                   nextVideo();
+                   event.target.playVideo();
+                }
+            }
+
+            function addVideo(video) {
+                playList.push('https://www.youtube.com/embed/' + video + '?rel=0&enablejsapi=1');
+                videoCnt++;
+
+                if(isFirst) {
+                    src.src = playList[0];
+                }
+
+            }
+
+            function nextVideo() {
+                if(videoCnt) {
+                    src.src = '';
+                    restoreColor(nowVideo);
+                    nowVideo = (nowVideo + 1) % videoCnt;
+                    src.src = playList[nowVideo];
+                    changeColor(nowVideo);
+                }
+            }
+
+            function prevVideo() {
+                if(videoCnt) {
+                    restoreColor(nowVideo);
+
+                    if(!nowVideo) {
+                        nowVideo = videoCnt - 1;
+                    }
+
+                    else {
+                        nowVideo--;
+                    }
+
+                    src.src = playList[nowVideo];
+                    changeColor(nowVideo);
+                }
+            }
+
+            function changeColor(now) {
+                $(`#${now}`).css('background-color', 'rgb(44, 67, 136)');
+                $(`#${now}`).css('color', 'white');
+            }
+
+            function restoreColor(now) {
+                $(`#${now}`).css('background-color', 'rgb(228, 230, 234)');
+                $(`#${now}`).css('color', 'black');
+            }
+
+            $(document).ready(()=>{
+                $("form").submit((e)=>{
+                    addVideo($('#video').val());
+                    $('#video').val('');
+                    $('#box').append(`<p id="${i}">${$('#name').val()}</p>`);
+                    $('#name').val('');
+
+                    $(`#${i++}`).on('click', (e)=>{
+                        console.log(e.target.id);
+
+                        //지금 내가 보는 영상이랑 지울 영상이랑 id가 일치할때
+                        if(Number(e.target.id) == nowVideo) {
+                            nowVideo++;
+                        }
+
+                        //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
+                        for(j = Number(e.target.id) + 1; j < i; j++) {
+                            $(`#${j}`).attr('id', `${j - 1}`);
+                            console.log($(`#${j}`).attr('id'));
+                        }
+
+                        //지울 영상을 배열에서 삭제
+                        playList.splice(Number(e.target.id), 1);
+                        i--;
+                        videoCnt--;
+
+                        $(e.target).remove();
+                    });
+                    e.preventDefault();
+                });
+            });
+        </script>
+    </body>
+</html>
