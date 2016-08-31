@@ -72,24 +72,26 @@
             </form>
             <button type="button" name="button" onclick="prevVideo()">prev</button>
             <button type="button" name="button" onclick="nextVideo()">next</button>
+            <!-- <button type="button" name="button" onclick="onPlayerStateChange()">aaaa</button> -->
             <div id="box">
             </div>
         </div>
 
         <div class="container">
-            <iframe id="p" src="" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+            <iframe id="p" src="" width="100%" height="100%" frameborder="0" ></iframe>
         </div>
 
         <script>
-            var src = document.getElementById("p");
             var playList = [];
             var videoCnt = 0;
             var nowVideo = 0;
             var isFirst = true;
             var i = 0;
+            var player;
 
             function onYouTubeIframeAPIReady() {
-                var player = new YT.Player('p', {
+                console.log('onYouTubeIframeAPIReady()');
+                player = new YT.Player('p', {
                     events: {
                         'onReady': onPlayerReady,               // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
                         'onStateChange': onPlayerStateChange    // 플레이어의 상태가 변경될 때마다 실행
@@ -98,6 +100,7 @@
             }
 
             function onPlayerReady(event) {
+                console.log("onPlayerReady called");
                 event.target.playVideo();
 
                 if(isFirst) {
@@ -107,11 +110,10 @@
             }
 
             function onPlayerStateChange(event) {
-                console.log(event.target);
+                console.log("onPlayerStateChange called");
+                console.log(event);
                 if(event.data == YT.PlayerState.ENDED) {
-                  event.target.clearVideo();
-                   nextVideo();
-                   event.target.playVideo();
+                    nextVideo();
                 }
             }
 
@@ -120,17 +122,22 @@
                 videoCnt++;
 
                 if(isFirst) {
-                    src.src = playList[0];
+                    document.getElementById('p').src = playList[0];
                 }
 
             }
 
             function nextVideo() {
                 if(videoCnt) {
-                    src.src = '';
                     restoreColor(nowVideo);
                     nowVideo = (nowVideo + 1) % videoCnt;
-                    src.src = playList[nowVideo];
+                    document.getElementById('p').src = playList[nowVideo];
+                    player = new YT.Player('p', {
+                        events: {
+                            'onReady': onPlayerReady,
+                            'onStateChange': onPlayerStateChange
+                        }
+                    });
                     changeColor(nowVideo);
                 }
             }
@@ -147,7 +154,7 @@
                         nowVideo--;
                     }
 
-                    src.src = playList[nowVideo];
+                    document.getElementById('p').src = playList[nowVideo];
                     changeColor(nowVideo);
                 }
             }
