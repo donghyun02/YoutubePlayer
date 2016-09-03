@@ -87,6 +87,18 @@
         </div>
       </div>
 
+      <!-- Modal Structure -->
+      <div id="modal1" class="modal">
+        <div class="modal-content">
+          <h4>Usage</h4>
+          <p>영상 이름에는 자신이 볼 동영상의 이름과는 별개로 자신이 원하는 이름을 기입하면 됩니다.</p>
+          <p>영상 ID에는 자신이 볼 Youtube 영상의 ID를 입력하면 됩니다. 자신이 보고싶은 영상의 url이 다음과 같은 경우 https://www.youtube.com/watch?v=nzDO6tAB6ng url의 nzDO6tAB6ng 부분을 기입하면 됩니다.</p>
+        </div>
+        <div class="modal-footer">
+          <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">확인</a>
+        </div>
+      </div>
+
         <script>
             var playList = [];
             var videoCnt = 0;
@@ -175,6 +187,7 @@
             }
 
             $(document).ready(()=>{
+              $('#modal1').openModal();
                 $("form").submit((e)=>{
                     addVideo($('#video').val());
                     $('#video').val('');
