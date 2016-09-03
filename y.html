@@ -136,7 +136,7 @@
                 playList.push('https://www.youtube.com/embed/' + video + '?rel=0&enablejsapi=1');
                 videoCnt++;
 
-                if (videoCnt == 1) {
+                if ($('#p').attr('src') == '') {
                     document.getElementById('p').src = playList[0];
                 }
 
