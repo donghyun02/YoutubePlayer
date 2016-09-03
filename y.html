@@ -5,6 +5,12 @@
         <title>youtube play list</title>
         <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
         <script src="https://www.youtube.com/iframe_api"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+          <!--Import Google Icon Font-->
+        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+          <!--Import materialize.css-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
         <style>
             html, body {
@@ -16,70 +22,63 @@
               margin-left: 0;
               margin-right: 0;
               margin-bottom: 0;
-              background-color: rgb(228, 230, 234);
-            }
-
-            .header {
-              width: 100%;
-              height: 50px;
-              color: white;
-              font-family: arial;
-              font-size: 24px;
-              background-color: rgb(44, 67, 136);
-            }
-
-            .header span {
-              display: block;
-              padding-top: 10px;
-              padding-left: 10px;
-            }
-
-            .side-bar {
-              position: absolute;
-              display: inline-block;
-              width: 20%;
-              height: 93.4%;
-              overflow: scroll;
-              text-align: center;
             }
 
             input, button {
               margin: 5px;
             }
 
-            .container {
-              position: absolute;
-              display: inline-block;
-              left: 20%;
-              width: 80%;
-              height: 93.4%;
+            #box::-webkit-scrollbar {
+              display: none;
             }
+
         </style>
     </head>
     <body>
 
-        <div class="header">
-          <span>Youtube Player</span>
-        </div>
-
-        <div class="side-bar">
-            <form>
-                <input type="text" name="name" value="" id="name" placeholder="영상 이름">
-                <br>
-                <input type="text" id="video" placeholder="영상 ID">
-                <br>
-                <input type="submit" value="확인">
-            </form>
-            <button type="button" name="button" onclick="prevVideo()">prev</button>
-            <button type="button" name="button" onclick="nextVideo()">next</button>
-            <!-- <button type="button" name="button" onclick="onPlayerStateChange()">aaaa</button> -->
-            <div id="box">
-            </div>
-        </div>
-
+      <nav>
         <div class="container">
-            <iframe id="p" src="" width="100%" height="100%" frameborder="0" allowfullscreen></iframe>
+          <div class="nav-wrapper red lighten-2">
+            <ul class="left">
+              <li style="font-size: 24px;">Youtube Player</li>
+            </ul>
+          </div>
         </div>
+      </nav>
+      <br>
+
+      <div class="row">
+
+        <div class="col s3" id="side">
+          <div class="center">
+            <div class="container">
+
+              <form>
+                  <input type="text" name="name" value="" id="name" placeholder="영상 이름">
+                  <br>
+                  <input type="text" id="video" placeholder="영상 ID">
+                  <br>
+                   <button class="btn waves-effect waves-light" type="submit" name="action">확인</button>
+              </form>
+
+              <a class="waves-effect waves-light btn" onclick="prevVideo()"><i class="material-icons">skip_previous</i></a>
+              <a class="waves-effect waves-light btn" onclick="nextVideo()"><i class="material-icons">skip_next</i></a>
+
+              <div id="box" style="height: 300px; overflow: scroll;">
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col s9">
+          <div class="container">
+           <div class="video-container">
+              <iframe id="p" src="" width="853" height="480" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
 
         <script>
             var playList = [];
@@ -158,12 +157,10 @@
             }
 
             function changeColor(now) {
-                $(`#${now}`).css('background-color', 'rgb(44, 67, 136)');
-                $(`#${now}`).css('color', 'white');
+                $(`#${now}`).css('color', '#1976d2');
             }
 
             function restoreColor(now) {
-                $(`#${now}`).css('background-color', 'rgb(228, 230, 234)');
                 $(`#${now}`).css('color', 'black');
             }
 
@@ -171,7 +168,7 @@
                 $("form").submit((e)=>{
                     addVideo($('#video').val());
                     $('#video').val('');
-                    $('#box').append(`<p id="${i}">${$('#name').val()}</p>`);
+                    $('#box').append(`<p class="flow-text" id="${i}">${$('#name').val()}</p>`);
                     $('#name').val('');
 
                     $(`#${i++}`).on('click', (e)=>{
