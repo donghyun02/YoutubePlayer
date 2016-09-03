@@ -19,11 +19,16 @@
             margin: 5px;
         }
 
-        #box::-webkit-scrollbar {
-            display: none;
+        #box {
+          height: 250px;
+          overflow: hidden;
         }
-        /* label underline focus color */
 
+        #box:hover {
+          overflow-y: scroll;
+        }
+
+        /* label underline focus color */
         .input-field input[type=text]:focus {
             border-bottom: 1px solid #2196F3;
             box-shadow: 0 1px 0 0 #2196F3;
@@ -70,7 +75,7 @@
                     <br>
                     <a class="waves-effect waves-light blue btn modal-trigger" href="#modal1"><i class="material-icons">description</i></a>
 
-                    <div id="box" style="height: 250px; overflow: scroll;">
+                    <div id="box">
                     </div>
 
                 </div>
