@@ -1,226 +1,227 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>youtube player</title>
-        <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-        <script src="https://www.youtube.com/iframe_api"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-          <!--Import Google Icon Font-->
-        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-          <!--Import materialize.css-->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-        <style>
-            input, button {
-              margin: 5px;
-            }
+<head>
+    <meta charset="utf-8">
+    <title>youtube player</title>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-            #box::-webkit-scrollbar {
-              display: none;
-            }
+    <style>
+        input,
+        button {
+            margin: 5px;
+        }
 
-             /* label underline focus color */
-             .input-field input[type=text]:focus {
-               border-bottom: 1px solid #2196F3;
-               box-shadow: 0 1px 0 0 #2196F3;
-             }
+        #box::-webkit-scrollbar {
+            display: none;
+        }
+        /* label underline focus color */
 
-             input:-webkit-autofill {
-                -webkit-box-shadow: 0 0 0 1000px white inset;
-             }
+        .input-field input[type=text]:focus {
+            border-bottom: 1px solid #2196F3;
+            box-shadow: 0 1px 0 0 #2196F3;
+        }
 
-        </style>
-    </head>
-    <body>
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px white inset;
+        }
+    </style>
+</head>
 
-      <nav>
+<body>
+
+    <nav>
         <div class="container">
-          <div class="nav-wrapper red lighten-2">
-            <ul class="left">
-              <li style="font-size: 24px;">Youtube Player</li>
-            </ul>
-          </div>
+            <div class="nav-wrapper red lighten-2">
+                <ul class="left">
+                    <li style="font-size: 24px;">Youtube Player</li>
+                </ul>
+            </div>
         </div>
-      </nav>
-      <br>
+    </nav>
+    <br>
 
-      <div class="row">
+    <div class="row">
 
         <div class="col s3" id="side">
-          <div class="center">
-            <div class="container">
+            <div class="center">
+                <div class="container">
 
-              <form>
-                <div class="input-field">
-                  <input type="text" name="name" value="" id="name" placeholder="영상 이름">
-                  <br>
-                  <input type="text" id="video" placeholder="영상 ID">
-                  <br>
-                   <button class="btn waves-effect blue waves-light" type="submit" name="action">확인</button>
-                 </div>
-              </form>
+                    <form>
+                        <div class="input-field">
+                            <input type="text" name="name" value="" id="name" placeholder="영상 이름">
+                            <br>
+                            <input type="text" id="video" placeholder="영상 ID">
+                            <br>
+                            <button class="btn waves-effect blue waves-light" type="submit" name="action">확인</button>
+                        </div>
+                    </form>
 
-              <a class="waves-effect waves-light blue btn" onclick="prevVideo()"><i class="material-icons">skip_previous</i></a>
-              <a class="waves-effect waves-light blue btn" onclick="nextVideo()"><i class="material-icons">skip_next</i></a>
-              <br>
-              <br>
-              <a class="waves-effect waves-light blue btn modal-trigger" href="#modal1"><i class="material-icons">description</i></a>
+                    <a class="waves-effect waves-light blue btn" onclick="prevVideo()"><i class="material-icons">skip_previous</i></a>
+                    <a class="waves-effect waves-light blue btn" onclick="nextVideo()"><i class="material-icons">skip_next</i></a>
+                    <br>
+                    <br>
+                    <a class="waves-effect waves-light blue btn modal-trigger" href="#modal1"><i class="material-icons">description</i></a>
 
-              <div id="box" style="height: 250px; overflow: scroll;">
-              </div>
+                    <div id="box" style="height: 250px; overflow: scroll;">
+                    </div>
 
+                </div>
             </div>
-          </div>
         </div>
 
         <div class="col s9">
-          <div class="container">
-           <div class="video-container">
-              <iframe id="p" src="" width="853" height="480" frameborder="0" allowfullscreen></iframe>
+            <div class="container">
+                <div class="video-container">
+                    <iframe id="p" src="" width="853" height="480" frameborder="0" allowfullscreen></iframe>
+                </div>
             </div>
-          </div>
         </div>
-      </div>
+    </div>
 
-      <!-- Modal Structure -->
-      <div id="modal1" class="modal">
+    <!-- Modal Structure -->
+    <div id="modal1" class="modal">
         <div class="modal-content">
-          <h4>Usage</h4>
-          <p>영상 이름에는 자신이 볼 동영상의 이름과는 별개로 자신이 원하는 이름을 기입하면 됩니다.</p>
-          <p>영상 ID에는 자신이 볼 Youtube 영상의 ID를 입력하면 됩니다. 자신이 보고싶은 영상의 url이 다음과 같은 경우 https://www.youtube.com/watch?v=nzDO6tAB6ng url의 nzDO6tAB6ng 부분을 기입하면 됩니다.</p>
-          <p>ex) 영상 이름 : 하늘바라기</p>
-          <p>ex) 영상 ID : nzDO6tAB6ng</p>
-          <p>재생목록에 있는 영상의 이름을 클릭하면 영상이 재생목록에서 삭제됩니다.</p>
+            <h4>Usage</h4>
+            <p>영상 이름에는 자신이 볼 동영상의 이름과는 별개로 자신이 원하는 이름을 기입하면 됩니다.</p>
+            <p>영상 ID에는 자신이 볼 Youtube 영상의 ID를 입력하면 됩니다. 자신이 보고싶은 영상의 url이 다음과 같은 경우 https://www.youtube.com/watch?v=nzDO6tAB6ng url의 nzDO6tAB6ng 부분을 기입하면 됩니다.</p>
+            <p>ex) 영상 이름 : 하늘바라기</p>
+            <p>ex) 영상 ID : nzDO6tAB6ng</p>
+            <p>재생목록에 있는 영상의 이름을 클릭하면 영상이 재생목록에서 삭제됩니다.</p>
         </div>
         <div class="modal-footer">
-          <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">확인</a>
+            <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">확인</a>
         </div>
-      </div>
+    </div>
 
-        <script>
-            var playList = [];
-            var videoCnt = 0;
-            var nowVideo = 0;
-            var i = 0;
-            var player;
+    <script>
+        var playList = [];
+        var videoCnt = 0;
+        var nowVideo = 0;
+        var i = 0;
+        var player;
 
-            function onYouTubeIframeAPIReady() {
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('p', {
+                events: {
+                    'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
+                    'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+
+            if (videoCnt == 1) {
+                changeColor(0);
+            }
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data == YT.PlayerState.ENDED) {
+                nextVideo();
+            }
+        }
+
+        function addVideo(video) {
+            if (video != '') {
+                playList.push('https://www.youtube.com/embed/' + video + '?rel=0&enablejsapi=1');
+                videoCnt++;
+
+                if (videoCnt == 1) {
+                    document.getElementById('p').src = playList[0];
+                }
+
+            }
+
+        }
+
+        function nextVideo() {
+            if (videoCnt) {
+                restoreColor(nowVideo);
+                nowVideo = (nowVideo + 1) % videoCnt;
+                document.getElementById('p').src = playList[nowVideo];
                 player = new YT.Player('p', {
                     events: {
-                        'onReady': onPlayerReady,               // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
-                        'onStateChange': onPlayerStateChange    // 플레이어의 상태가 변경될 때마다 실행
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
                     }
                 });
+                changeColor(nowVideo);
             }
+        }
 
-            function onPlayerReady(event) {
-                event.target.playVideo();
+        function prevVideo() {
+            if (videoCnt) {
+                restoreColor(nowVideo);
 
-                if(videoCnt == 1) {
-                    changeColor(0);
+                if (!nowVideo) {
+                    nowVideo = videoCnt - 1;
+                } else {
+                    nowVideo--;
                 }
-            }
 
-            function onPlayerStateChange(event) {
-                if(event.data == YT.PlayerState.ENDED) {
-                    nextVideo();
-                }
-            }
-
-            function addVideo(video) {
-              if(video != '') {
-                  playList.push('https://www.youtube.com/embed/' + video + '?rel=0&enablejsapi=1');
-                  videoCnt++;
-
-                  if(videoCnt == 1) {
-                      document.getElementById('p').src = playList[0];
-                  }
-
-              }
-
-            }
-
-            function nextVideo() {
-                if(videoCnt) {
-                    restoreColor(nowVideo);
-                    nowVideo = (nowVideo + 1) % videoCnt;
-                    document.getElementById('p').src = playList[nowVideo];
-                    player = new YT.Player('p', {
-                        events: {
-                            'onReady': onPlayerReady,
-                            'onStateChange': onPlayerStateChange
-                        }
-                    });
-                    changeColor(nowVideo);
-                }
-            }
-
-            function prevVideo() {
-                if(videoCnt) {
-                    restoreColor(nowVideo);
-
-                    if(!nowVideo) {
-                        nowVideo = videoCnt - 1;
+                player = new YT.Player('p', {
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange
                     }
-
-                    else {
-                        nowVideo--;
-                    }
-
-                    player = new YT.Player('p', {
-                        events: {
-                            'onReady': onPlayerReady,
-                            'onStateChange': onPlayerStateChange
-                        }
-                    });
-
-                    document.getElementById('p').src = playList[nowVideo];
-                    changeColor(nowVideo);
-                }
-            }
-
-            function changeColor(now) {
-                $(`#${now}`).css('color', '#1976d2');
-            }
-
-            function restoreColor(now) {
-                $(`#${now}`).css('color', 'black');
-            }
-
-            $(document).ready(()=>{
-              $('.modal-trigger').leanModal();
-                $("form").submit((e)=>{
-                    addVideo($('#video').val());
-                    $('#video').val('');
-                    $('#box').append(`<p class="flow-text" id="${i}">${$('#name').val()}</p>`);
-                    $('#name').val('');
-
-                    $(`#${i++}`).on('click', (e)=>{
-                        console.log(e.target.id);
-
-                        //지금 내가 보는 영상이랑 지울 영상이랑 id가 일치할때
-                        if(Number(e.target.id) == nowVideo) {
-                            nowVideo++;
-                        }
-
-                        //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-                        for(j = Number(e.target.id) + 1; j < i; j++) {
-                            $(`#${j}`).attr('id', `${j - 1}`);
-                            console.log($(`#${j}`).attr('id'));
-                        }
-
-                        //지울 영상을 배열에서 삭제
-                        playList.splice(Number(e.target.id), 1);
-                        i--;
-                        videoCnt--;
-
-                        $(e.target).remove();
-                    });
-                    e.preventDefault();
                 });
+
+                document.getElementById('p').src = playList[nowVideo];
+                changeColor(nowVideo);
+            }
+        }
+
+        function changeColor(now) {
+            $(`#${now}`).css('color', '#1976d2');
+        }
+
+        function restoreColor(now) {
+            $(`#${now}`).css('color', 'black');
+        }
+
+        $(document).ready(() => {
+            $('.modal-trigger').leanModal();
+            $("form").submit((e) => {
+                addVideo($('#video').val());
+                $('#video').val('');
+                $('#box').append(`<p class="flow-text" id="${i}">${$('#name').val()}</p>`);
+                $('#name').val('');
+
+                $(`#${i++}`).on('click', (e) => {
+                    console.log(e.target.id);
+
+                    //지금 내가 보는 영상이랑 지울 영상이랑 id가 일치할때
+                    if (Number(e.target.id) == nowVideo) {
+                        nowVideo++;
+                    }
+
+                    //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
+                    for (j = Number(e.target.id) + 1; j < i; j++) {
+                        $(`#${j}`).attr('id', `${j - 1}`);
+                        console.log($(`#${j}`).attr('id'));
+                    }
+
+                    //지울 영상을 배열에서 삭제
+                    playList.splice(Number(e.target.id), 1);
+                    i--;
+                    videoCnt--;
+
+                    $(e.target).remove();
+                });
+                e.preventDefault();
             });
-        </script>
-    </body>
+        });
+    </script>
+</body>
+
 </html>
