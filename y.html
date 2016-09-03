@@ -108,7 +108,7 @@
 
             function onPlayerStateChange(event) {
                 console.log("onPlayerStateChange called");
-                console.log(event);
+                console.log(event.target);
                 if(event.data == YT.PlayerState.ENDED) {
                     nextVideo();
                 }
@@ -150,6 +150,13 @@
                     else {
                         nowVideo--;
                     }
+                    
+                    player = new YT.Player('p', {
+                        events: {
+                            'onReady': onPlayerReady,
+                            'onStateChange': onPlayerStateChange
+                        }
+                    });
 
                     document.getElementById('p').src = playList[nowVideo];
                     changeColor(nowVideo);
