@@ -32,6 +32,11 @@
               display: none;
             }
 
+             /* label underline focus color */
+             .input-field input[type=text]:focus {
+               border-bottom: 1px solid #2196F3;
+               box-shadow: 0 1px 0 0 #2196F3;
+             }
         </style>
     </head>
     <body>
@@ -54,15 +59,17 @@
             <div class="container">
 
               <form>
+                <div class="input-field">
                   <input type="text" name="name" value="" id="name" placeholder="영상 이름">
                   <br>
                   <input type="text" id="video" placeholder="영상 ID">
                   <br>
-                   <button class="btn waves-effect waves-light" type="submit" name="action">확인</button>
+                   <button class="btn waves-effect blue waves-light" type="submit" name="action">확인</button>
+                 </div>
               </form>
 
-              <a class="waves-effect waves-light btn" onclick="prevVideo()"><i class="material-icons">skip_previous</i></a>
-              <a class="waves-effect waves-light btn" onclick="nextVideo()"><i class="material-icons">skip_next</i></a>
+              <a class="waves-effect waves-light blue btn" onclick="prevVideo()"><i class="material-icons">skip_previous</i></a>
+              <a class="waves-effect waves-light blue btn" onclick="nextVideo()"><i class="material-icons">skip_next</i></a>
 
               <div id="box" style="height: 300px; overflow: scroll;">
               </div>
@@ -88,7 +95,6 @@
             var player;
 
             function onYouTubeIframeAPIReady() {
-                console.log('onYouTubeIframeAPIReady()');
                 player = new YT.Player('p', {
                     events: {
                         'onReady': onPlayerReady,               // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
@@ -98,7 +104,6 @@
             }
 
             function onPlayerReady(event) {
-                console.log("onPlayerReady called");
                 event.target.playVideo();
 
                 if(videoCnt == 1) {
@@ -107,8 +112,6 @@
             }
 
             function onPlayerStateChange(event) {
-                console.log("onPlayerStateChange called");
-                console.log(event.target);
                 if(event.data == YT.PlayerState.ENDED) {
                     nextVideo();
                 }
@@ -150,7 +153,7 @@
                     else {
                         nowVideo--;
                     }
-                    
+
                     player = new YT.Player('p', {
                         events: {
                             'onReady': onPlayerReady,
