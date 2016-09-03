@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>youtube player</title>
+    <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+    <!--Import Google Icon Font-->
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="./src/css/style.css">
+    <script src="./src/js/app.js"></script>
+</head>
+
+<body>
+
+    <nav>
+        <div class="container">
+            <div class="nav-wrapper red lighten-2">
+                <ul class="left">
+                    <li style="font-size: 24px;">Youtube Player</li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <br>
+
+    <div class="row">
+
+        <div class="col s3" id="side">
+            <div class="center">
+                <div class="container">
+
+                    <form>
+                        <div class="input-field">
+                            <input type="text" name="name" value="" id="name" placeholder="영상 이름">
+                            <br>
+                            <input type="text" id="video" placeholder="영상 ID">
+                            <br>
+                            <button class="btn waves-effect blue waves-light" type="submit" name="action">확인</button>
+                        </div>
+                    </form>
+
+                    <a class="waves-effect waves-light blue btn" onclick="prevVideo()"><i class="material-icons">skip_previous</i></a>
+                    <a class="waves-effect waves-light blue btn" onclick="nextVideo()"><i class="material-icons">skip_next</i></a>
+                    <br>
+                    <br>
+                    <a class="waves-effect waves-light blue btn modal-trigger" href="#modal1"><i class="material-icons">description</i></a>
+
+                    <div id="box">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="col s9">
+            <div class="container">
+                <div class="video-container">
+                    <iframe id="p" src="" width="853" height="480" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <h4>Usage</h4>
+            <p>영상 이름에는 자신이 볼 동영상의 이름과는 별개로 자신이 원하는 이름을 기입하면 됩니다.</p>
+            <p>영상 ID에는 자신이 볼 Youtube 영상의 ID를 입력하면 됩니다. 자신이 보고싶은 영상의 url이 다음과 같은 경우 https://www.youtube.com/watch?v=nzDO6tAB6ng url의 nzDO6tAB6ng 부분을 기입하면 됩니다.</p>
+            <p>ex) 영상 이름 : 하늘바라기</p>
+            <p>ex) 영상 ID : nzDO6tAB6ng</p>
+            <p>재생목록에 있는 영상의 이름을 클릭하면 영상이 재생목록에서 삭제됩니다.</p>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">확인</a>
+        </div>
+    </div>
+</body>
+
+</html>
