@@ -3,6 +3,9 @@ var videoCnt = 0;
 var nowVideo = 0;
 var i = 0;
 var player;
+var videoId = [];
+var cnt = 0;
+var isFirst = true;
 
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('p', {
@@ -16,7 +19,8 @@ function onYouTubeIframeAPIReady() {
 function onPlayerReady(event) {
     event.target.playVideo();
 
-    if (videoCnt == 1) {
+    if (isFirst) {
+        isFirst = false;
         changeColor(0);
     }
 }
@@ -28,6 +32,7 @@ function onPlayerStateChange(event) {
 }
 
 function addVideo(video) {
+
     if (video != '') {
         playList.push('https://www.youtube.com/embed/' + video + '?rel=0&enablejsapi=1');
         videoCnt++;
@@ -43,7 +48,11 @@ function addVideo(video) {
 function nextVideo() {
     if (videoCnt) {
         restoreColor(nowVideo);
-        nowVideo = (nowVideo + 1) % videoCnt;
+        nowVideo++;
+
+        if(nowVideo == videoCnt)
+            nowVideo = 0;
+
         document.getElementById('p').src = playList[nowVideo];
         player = new YT.Player('p', {
             events: {
@@ -78,42 +87,20 @@ function prevVideo() {
 }
 
 function changeColor(now) {
-    $(`#${now}`).css('color', '#1976d2');
+    $(`#list${now}`).css('color', '#1976d2');
 }
 
 function restoreColor(now) {
-    $(`#${now}`).css('color', 'black');
+    $(`#list${now}`).css('color', 'black');
 }
 
 $(document).ready(() => {
-    $('.modal-trigger').leanModal();
-    $("form").submit((e) => {
-        addVideo($('#video').val());
-        $('#video').val('');
-        $('#box').append(`<p class="flow-text" id="${i}">${$('#name').val()}</p>`);
-        $('#name').val('');
-
-        $(`#${i++}`).on('click', (e) => {
-            console.log(e.target.id);
-
-            //지금 내가 보는 영상이랑 지울 영상이랑 id가 일치할때
-            if (Number(e.target.id) == nowVideo) {
-                nowVideo++;
-            }
-
-            //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-            for (j = Number(e.target.id) + 1; j < i; j++) {
-                $(`#${j}`).attr('id', `${j - 1}`);
-                console.log($(`#${j}`).attr('id'));
-            }
-
-            //지울 영상을 배열에서 삭제
-            playList.splice(Number(e.target.id), 1);
-            i--;
-            videoCnt--;
-
-            $(e.target).remove();
-        });
+    $('#button-collapse').sideNav({
+            menuWidth: 800, // Default is 240
+        }
+    );
+    $("#search-video").submit((e) => {
         e.preventDefault();
+        search();
     });
 });
