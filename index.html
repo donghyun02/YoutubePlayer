@@ -169,6 +169,7 @@
               nowLoading = true;
               $('#slide-out').append(`
                 <li id="preloader" class="center">
+                    <br>
                     <div class="preloader-wrapper big active">
                       <div class="spinner-layer spinner-blue-only">
                         <div class="circle-clipper left">
@@ -185,20 +186,32 @@
               }
 
             $.ajax({
-                url: `https://www.googleapis.com/youtube/v3/search?q=${q}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet&type=video&maxResults=30`,
+                url: `https://www.googleapis.com/youtube/v3/search?q=${q}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet&type=video&maxResults=50`,
                 dataType: 'json',
                 type: 'GET',
                 success: (result) => {
+                    var id = '';
 
                     for(var i = 0; i < result.items.length; i++) {
-                        $.ajax({
-                            url: `https://www.googleapis.com/youtube/v3/videos?id=${result.items[i].id.videoId}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
-                            dataType: 'json',
-                            type: 'GET',
-                            async: false,
-                            success: (result2) => {
+
+                        if(i != 0) {
+                            id = id + ',';
+                        }
+
+                        id = id + result.items[i].id.videoId;
+
+                    }
+
+                    $.ajax({
+                        url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
+                        dataType: 'json',
+                        type: 'GET',
+                        async: false,
+                        success: (result2) => {
+
+                            for(var i = 0; i < result.items.length; i++) {
                                 var h = m = s = 0;
-                                var duration = result2.items[0].contentDetails.duration.split('PT')[1];
+                                var duration = result2.items[i].contentDetails.duration.split('PT')[1];
 
                                 if(duration.indexOf('H') != -1) {
                                     h = duration.split('H')[0];
@@ -214,7 +227,7 @@
                                     s = duration.split('S')[0];
                                 }
 
-                                videoId.push(result2.items[0].id);
+                                videoId.push(result2.items[i].id);
 
                                 $('#preloader').remove();
 
@@ -226,14 +239,14 @@
                                         <div id="">
                                             <div id="list">
                                                 <div id="thumbnail">
-                                                    <img src="${result2.items[0].snippet.thumbnails.default.url}" />
+                                                    <img src="${result2.items[i].snippet.thumbnails.default.url}" />
                                                 </div>
                                                 <div id="info" style="margin-left: 10px;">
                                                     <div id="title" class="title${cnt}">
-                                                        ${result2.items[0].snippet.title}
+                                                        ${result2.items[i].snippet.title}
                                                     </div>
                                                     <div id="publisher" class="publisher${cnt}">
-                                                        재생시간 : ${h}:${m}:${s} / 게시자 : ${result2.items[0].snippet.channelTitle}
+                                                        재생시간 : ${h}:${m}:${s} / 게시자 : ${result2.items[i].snippet.channelTitle}
                                                     </div>
                                                 </div>
                                                 <div id="music-info">
@@ -251,10 +264,10 @@
                                     $('body').append(`
                                       <div id="modal${cnt}" class="modal">
                                         <div class="modal-content">
-                                          <h4>${result2.items[0].snippet.title}</h4>
+                                          <h4>${result2.items[i].snippet.title}</h4>
                                           <p>재생시간 : ${h}:${m}:${s}</p>
-                                          <p>게시자 : ${result2.items[0].snippet.channelTitle}</p>
-                                          <p>설명 : ${result2.items[0].snippet.description}</p>
+                                          <p>게시자 : ${result2.items[i].snippet.channelTitle}</p>
+                                          <p>설명 : ${result2.items[i].snippet.description}</p>
                                         </div>
                                         <div class="modal-footer">
                                             <a href="#!" class="modal-action modal-close waves-effect waves-blue btn-flat">확인</a>
@@ -330,9 +343,12 @@
 
                                     cnt++;
 
-                            }
-                    });
-                }
+                        }
+                    }
+                });
+
+
+
 
             }});
         }
@@ -464,95 +480,111 @@
         function cookieToPlayList() {
             var data = getCookie('list').split(' ');
 
-            for(var i = 0; i < data.length - 1; i++) {
-                playList.push(data[i])
-            }
+            if(data != '') {
 
-            videoCnt = data.length - 1;
+                for(var i = 0; i < data.length - 1; i++) {
+                    playList.push(data[i])
+                }
 
-            console.log(playList);
+                videoCnt = data.length - 1;
 
-            for(var v = 0; v < data.length - 1; v++) {
+                var id = '';
+
+                for(var i = 0; i < data.length - 1; i++) {
+
+                    if(i != 0) {
+                        id = id + ',';
+                    }
+
+                    id = id + data[i];
+
+                }
+
                 $.ajax({
-                    url: `https://www.googleapis.com/youtube/v3/videos?id=${data[v]}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
+                    url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
                     dataType: 'json',
                     type: 'GET',
                     async: false,
                     success: (result) => {
-                        $('#box').append(`
-                            <div id="box-list" class="box${v} card-panel">
-                                <div id="close">
-                                    <img src="x.png" class="${v}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+
+                        for(var v = 0; v < data.length - 1; v++) {
+                            $('#box').append(`
+                                <div id="box-list" class="box${v} card-panel">
+                                    <div id="close">
+                                        <img src="x.png" class="${v}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                                    </div>
+                                    <div id="song-title">
+                                        <span id="list${v}" style="cursor: pointer;">${result.items[v].snippet.title}</span>
+                                    </div>
                                 </div>
-                                <div id="song-title">
-                                    <span id="list${v}" style="cursor: pointer;">${result.items[0].snippet.title}</span>
-                                </div>
-                            </div>
-                        `);
+                            `);
 
-                        $(`#list${v}`).on('click', (e) => {
-                            restoreColor(nowVideo);
-                            nowVideo = e.target.id.split('list')[1];
-                            player.loadVideoById(playList[nowVideo]);
-                            changeColor(nowVideo);
-                        });
+                            $(`#list${v}`).on('click', (e) => {
+                                restoreColor(nowVideo);
+                                nowVideo = e.target.id.split('list')[1];
+                                player.loadVideoById(playList[nowVideo]);
+                                changeColor(nowVideo);
+                            });
 
-                        $(`.${v}`).on('click', (e2) => {
-                            //지울 영상을 배열에서 삭제
-                            playList.splice(Number($(e2.target).attr('class')), 1);
+                            $(`.${v}`).on('click', (e2) => {
+                                //지울 영상을 배열에서 삭제
+                                playList.splice(Number($(e2.target).attr('class')), 1);
 
-                            $(`.box${$(e2.target).attr('class')}`).remove();
+                                $(`.box${$(e2.target).attr('class')}`).remove();
 
-                            //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-                            for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
-                                $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
-                                $(`.${j}`).attr('class', `${j - 1}`);
-                                $(`#list${j}`).attr('id', `list${j - 1}`);
-                            }
-
-                            videoCnt--;
-
-                            //현재 시청중인 영상을 지울경우
-                            if($(e2.target).attr('class') == nowVideo) {
-
-                                if(!videoCnt) {
-                                    $('.video-container').empty();
-                                    $('.video-container').append('<div id="p"></div>');
+                                //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
+                                for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
+                                    $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
+                                    $(`.${j}`).attr('class', `${j - 1}`);
+                                    $(`#list${j}`).attr('id', `list${j - 1}`);
                                 }
 
-                                else {
+                                videoCnt--;
+
+                                //현재 시청중인 영상을 지울경우
+                                if($(e2.target).attr('class') == nowVideo) {
+
+                                    if(!videoCnt) {
+                                        $('.video-container').empty();
+                                        $('.video-container').append('<div id="p"></div>');
+                                    }
+
+                                    else {
+                                        nowVideo--;
+                                        nextVideo();
+                                    }
+
+                                }
+
+                                if($(e2.target).attr('class') < nowVideo) {
                                     nowVideo--;
-                                    nextVideo();
                                 }
 
-                            }
+                                if(videoCnt == 0) {
+                                    isFirst = true;
+                                }
 
-                            if($(e2.target).attr('class') < nowVideo) {
-                                nowVideo--;
-                            }
+                                insertCookie();
+                            });
 
-                            if(videoCnt == 0) {
-                                isFirst = true;
-                            }
-
-                            insertCookie();
-                        });
-
+                        }
                     }
 
                 });
-            }
 
-            if (isFirst) {
-                player = new YT.Player('p', {
-                    width: 853,
-                    height: 480,
-                    videoId: playList[0],
-                    events: {
-                        'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
-                        'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
-                    }
-                });
+
+                if (isFirst) {
+                    player = new YT.Player('p', {
+                        width: 853,
+                        height: 480,
+                        videoId: playList[0],
+                        events: {
+                            'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
+                            'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
+                        }
+                    });
+                }
+
             }
 
         }
