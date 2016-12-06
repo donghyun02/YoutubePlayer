@@ -3,18 +3,77 @@
     <head>
         <title>Youtube Player</title>
         <meta charset="utf-8">
+        <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
         <!--Import Google Icon Font-->
         <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <!--Import materialize.css-->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="http://api.typolink.co.kr/css?family=RixSGo+L:400" />
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-        <script src="https://www.youtube.com/iframe_api"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
-        <script src="src/js/search.js"></script>
-        <script src="src/js/youtube.js"></script>
-        <link rel="stylesheet" type="text/css" href="src/css/style.css">
+
+    <style>
+
+        body {
+        	font-family: 'RixSGo L';
+        }
+
+        #box {
+          height: 500px;
+          overflow: hidden;
+        }
+
+        #box:hover{
+          overflow-y: scroll;
+        }
+
+        /* label underline focus color */
+        .input-field input[type=text]:focus {
+            border-bottom: 1px solid #2196F3;
+            box-shadow: 0 1px 0 0 #2196F3;
+        }
+
+        input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px white inset;
+        }
+
+        #title {
+            width: 500px;
+            height: 48px;
+            overflow: hidden;
+        }
+
+        #take-music {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        #box-list, #list, #song-title, #music-info {
+            display: flex;
+        }
+
+        #close {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        #modal-a:hover {
+            background-color: white;
+        }
+
+        .waves-effect.waves-blue .waves-ripple {
+         /* The alpha value allows the text and background color
+         of the button to still show through. */
+          background-color: #2196F3;
+        }
+
+        [type="checkbox"]:checked+label:before {
+            border-right: 2px solid #2196F3;
+            border-bottom: 2px solid #2196F3;
+        }
+
+    </style>
+
     </head>
   <body>
 
@@ -39,6 +98,7 @@
 
                     <br>
                     <br>
+
                     <div id="box">
                     </div>
 
@@ -47,9 +107,16 @@
         </div>
 
         <div class="col s9">
+            <div class="">
+                <input type="checkbox" id="shuffle"><label for="shuffle">셔플</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input type="checkbox" id="repeat"><label for="repeat">현재곡반복</label>
+            </div>
+
+            <br><br>
+
             <div class="container">
                 <div class="video-container">
-                    <iframe id="p" src="" width="853" height="480" frameborder="0" allowfullscreen></iframe>
+                    <div id="p"></div>
                 </div>
             </div>
         </div>
@@ -70,6 +137,442 @@
             </form>
         </li>
     </ul>
+
+    <script>
+        var playList = [];
+        var videoCnt = 0;
+        var nowVideo = 0;
+        var i = 0;
+        var player;
+        var videoId = [];
+        var cnt = 0;
+        var isFirst = true;
+        var nowLoading = false;
+
+        // 2. This code loads the IFrame Player API code asynchronously.
+        var tag = document.createElement('script');
+
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function search() {
+            var q = $('#query').val();
+            var videoId = [];
+
+            cnt = 0;
+            videoId = [];
+            $('.video-list').remove();
+            $('.modal').remove();
+
+            if(nowLoading == false) {
+              nowLoading = true;
+              $('#slide-out').append(`
+                <li id="preloader" class="center">
+                    <div class="preloader-wrapper big active">
+                      <div class="spinner-layer spinner-blue-only">
+                        <div class="circle-clipper left">
+                          <div class="circle"></div>
+                        </div><div class="gap-patch">
+                          <div class="circle"></div>
+                        </div><div class="circle-clipper right">
+                          <div class="circle"></div>
+                        </div>
+                      </div>
+                    </div>
+                </li>
+                `);
+              }
+
+            $.ajax({
+                url: `https://www.googleapis.com/youtube/v3/search?q=${q}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet&type=video&maxResults=30`,
+                dataType: 'json',
+                type: 'GET',
+                success: (result) => {
+
+                    for(var i = 0; i < result.items.length; i++) {
+                        $.ajax({
+                            url: `https://www.googleapis.com/youtube/v3/videos?id=${result.items[i].id.videoId}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
+                            dataType: 'json',
+                            type: 'GET',
+                            async: false,
+                            success: (result2) => {
+                                var h = m = s = 0;
+                                var duration = result2.items[0].contentDetails.duration.split('PT')[1];
+
+                                if(duration.indexOf('H') != -1) {
+                                    h = duration.split('H')[0];
+                                    duration = duration.split('H')[1];
+                                }
+
+                                if(duration.indexOf('M') != -1) {
+                                    m = duration.split('M')[0];
+                                    duration = duration.split('M')[1];
+                                }
+
+                                if(duration.indexOf('S') != -1) {
+                                    s = duration.split('S')[0];
+                                }
+
+                                videoId.push(result2.items[0].id);
+
+                                $('#preloader').remove();
+
+                                nowLoading = false;
+
+                                //검색결과 출력
+                                $('#slide-out').append(`
+                                    <li class="video-list card-panel">
+                                        <div id="">
+                                            <div id="list">
+                                                <div id="thumbnail">
+                                                    <img src="${result2.items[0].snippet.thumbnails.default.url}" />
+                                                </div>
+                                                <div id="info" style="margin-left: 10px;">
+                                                    <div id="title" class="title${cnt}">
+                                                        ${result2.items[0].snippet.title}
+                                                    </div>
+                                                    <div id="publisher" class="publisher${cnt}">
+                                                        재생시간 : ${h}:${m}:${s} / 게시자 : ${result2.items[0].snippet.channelTitle}
+                                                    </div>
+                                                </div>
+                                                <div id="music-info">
+                                                    <a id="modal-a" class="modal-trigger" href="#modal${cnt}"><img src="info.png" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" /></a>
+                                                </div>
+                                                <div id="take-music">
+                                                    <img class="take" id="${cnt}" src="basket.png" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    `);
+
+                                    //모달 등록
+                                    $('body').append(`
+                                      <div id="modal${cnt}" class="modal">
+                                        <div class="modal-content">
+                                          <h4>${result2.items[0].snippet.title}</h4>
+                                          <p>재생시간 : ${h}:${m}:${s}</p>
+                                          <p>게시자 : ${result2.items[0].snippet.channelTitle}</p>
+                                          <p>설명 : ${result2.items[0].snippet.description}</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <a href="#!" class="modal-action modal-close waves-effect waves-blue btn-flat">확인</a>
+                                        </div>
+                                      </div>
+                                      `);
+
+                                    $('.modal-trigger').leanModal();
+
+                                    //추가버튼을 눌렀을 경우
+                                    $(`#${cnt}`).on('click', (e) => {
+                                        $('#box').append(`
+                                            <div id="box-list" class="box${videoCnt} card-panel">
+                                                <div id="close">
+                                                    <img src="x.png" class="${videoCnt}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                                                </div>
+                                                <div id="song-title">
+                                                    <span id="list${videoCnt}" style="cursor: pointer;">${result.items[Number(e.target.id)].snippet.title}</span>
+                                                </div>
+                                            </div>
+                                        `);
+
+                                        $(`#list${videoCnt}`).on('click', (e) => {
+                                            restoreColor(nowVideo);
+                                            nowVideo = e.target.id.split('list')[1];
+                                            player.loadVideoById(playList[nowVideo]);
+                                            changeColor(nowVideo);
+                                        });
+
+                                        $(`.${videoCnt}`).on('click', (e2) => {
+                                            //지울 영상을 배열에서 삭제
+                                            playList.splice(Number($(e2.target).attr('class')), 1);
+
+                                            $(`.box${$(e2.target).attr('class')}`).remove();
+
+                                            //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
+                                            for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
+                                                $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
+                                                $(`.${j}`).attr('class', `${j - 1}`);
+                                                $(`#list${j}`).attr('id', `list${j - 1}`);
+                                            }
+
+                                            videoCnt--;
+
+                                            //현재 시청중인 영상을 지울경우
+                                            if($(e2.target).attr('class') == nowVideo) {
+
+                                                if(!videoCnt) {
+                                                    $('.video-container').empty();
+                                                    $('.video-container').append('<div id="p"></div>');
+                                                }
+
+                                                else {
+                                                    nowVideo--;
+                                                    nextVideo();
+                                                }
+
+                                            }
+
+                                            if($(e2.target).attr('class') < nowVideo) {
+                                                nowVideo--;
+                                            }
+
+                                            if(videoCnt == 0) {
+                                                isFirst = true;
+                                            }
+
+                                            insertCookie();
+
+                                        });
+                                        addVideo(videoId[e.target.id]);
+                                    });
+
+                                    cnt++;
+
+                            }
+                    });
+                }
+
+            }});
+        }
+
+        function onPlayerReady(event) {
+            event.target.playVideo();
+
+            if (isFirst) {
+                isFirst = false;
+                changeColor(0);
+            }
+
+        }
+
+        function onPlayerStateChange(event) {
+
+            if (event.data == YT.PlayerState.ENDED) {
+                nextVideo();
+            }
+
+        }
+
+        function addVideo(video) {
+            playList.push(video);
+            videoCnt++;
+
+            if (isFirst) {
+                player = new YT.Player('p', {
+                    width: 853,
+                    height: 480,
+                    videoId: video,
+                    events: {
+                        'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
+                        'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
+                    }
+                });
+            }
+
+            insertCookie();
+        }
+
+        function nextVideo() {
+            if (videoCnt) {
+
+                if(document.getElementById('repeat').checked) {
+                    player.loadVideoById(playList[nowVideo]);
+                }
+
+                else if(document.getElementById('shuffle').checked){
+                    var randomInt = Math.floor( (Math.random() * (videoCnt - 1 - 0 + 1)) + 0 );
+
+                    restoreColor(nowVideo);
+                    player.loadVideoById(playList[randomInt]);
+                    nowVideo = randomInt;
+                    changeColor(nowVideo);
+                }
+
+                else {
+                    restoreColor(nowVideo);
+                    nowVideo++;
+
+                    if(nowVideo == videoCnt) {
+                        nowVideo = 0;
+                    }
+
+                    player.loadVideoById(playList[nowVideo]);
+                    changeColor(nowVideo);
+                }
+            }
+        }
+
+        function prevVideo() {
+            if (videoCnt) {
+                restoreColor(nowVideo);
+
+                if (!nowVideo) {
+                    nowVideo = videoCnt - 1;
+                }
+
+                else {
+                    nowVideo--;
+                }
+
+                player.loadVideoById(playList[nowVideo]);
+                changeColor(nowVideo);
+            }
+        }
+
+        function changeColor(now) {
+            $(`#list${now}`).css('color', '#1976d2');
+        }
+
+        function restoreColor(now) {
+            $(`#list${now}`).css('color', 'black');
+        }
+
+        function setCookie(cName, cValue, cDay){
+            var expire = new Date();
+            expire.setDate(expire.getDate() + cDay);
+            cookies = cName + '=' + escape(cValue) + '; path=/ '; // 한글 깨짐을 막기위해 escape(cValue)를 합니다.
+            if(typeof cDay != 'undefined') cookies += ';expires=' + expire.toGMTString() + ';';
+            document.cookie = cookies;
+        }
+
+        function getCookie(cName) {
+            cName = cName + '=';
+            var cookieData = document.cookie;
+            var start = cookieData.indexOf(cName);
+            var cValue = [];
+            if(start != -1){
+                start += cName.length;
+                var end = cookieData.indexOf(';', start);
+                if(end == -1)end = cookieData.length;
+                cValue = cookieData.substring(start, end);
+            }
+            return unescape(cValue);
+        }
+
+        function insertCookie() {
+            data = ''
+
+            for(i = 0; i < playList.length; i++) {
+                data = data + playList[i] + ' '
+            }
+
+            setCookie('list', data, 365);
+        }
+
+        function cookieToPlayList() {
+            var data = getCookie('list').split(' ');
+
+            for(var i = 0; i < data.length - 1; i++) {
+                playList.push(data[i])
+            }
+
+            videoCnt = data.length - 1;
+
+            console.log(playList);
+
+            for(var v = 0; v < data.length - 1; v++) {
+                $.ajax({
+                    url: `https://www.googleapis.com/youtube/v3/videos?id=${data[v]}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
+                    dataType: 'json',
+                    type: 'GET',
+                    async: false,
+                    success: (result) => {
+                        $('#box').append(`
+                            <div id="box-list" class="box${v} card-panel">
+                                <div id="close">
+                                    <img src="x.png" class="${v}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                                </div>
+                                <div id="song-title">
+                                    <span id="list${v}" style="cursor: pointer;">${result.items[0].snippet.title}</span>
+                                </div>
+                            </div>
+                        `);
+
+                        $(`#list${v}`).on('click', (e) => {
+                            restoreColor(nowVideo);
+                            nowVideo = e.target.id.split('list')[1];
+                            player.loadVideoById(playList[nowVideo]);
+                            changeColor(nowVideo);
+                        });
+
+                        $(`.${v}`).on('click', (e2) => {
+                            //지울 영상을 배열에서 삭제
+                            playList.splice(Number($(e2.target).attr('class')), 1);
+
+                            $(`.box${$(e2.target).attr('class')}`).remove();
+
+                            //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
+                            for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
+                                $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
+                                $(`.${j}`).attr('class', `${j - 1}`);
+                                $(`#list${j}`).attr('id', `list${j - 1}`);
+                            }
+
+                            videoCnt--;
+
+                            //현재 시청중인 영상을 지울경우
+                            if($(e2.target).attr('class') == nowVideo) {
+
+                                if(!videoCnt) {
+                                    $('.video-container').empty();
+                                    $('.video-container').append('<div id="p"></div>');
+                                }
+
+                                else {
+                                    nowVideo--;
+                                    nextVideo();
+                                }
+
+                            }
+
+                            if($(e2.target).attr('class') < nowVideo) {
+                                nowVideo--;
+                            }
+
+                            if(videoCnt == 0) {
+                                isFirst = true;
+                            }
+
+                            insertCookie();
+                        });
+
+                    }
+
+                });
+            }
+
+            if (isFirst) {
+                player = new YT.Player('p', {
+                    width: 853,
+                    height: 480,
+                    videoId: playList[0],
+                    events: {
+                        'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
+                        'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
+                    }
+                });
+            }
+
+        }
+
+        jQuery(window).load(function () {
+            cookieToPlayList();
+        });
+
+        $(document).ready(() => {
+
+            $('#button-collapse').sideNav({
+                    menuWidth: 800, // Default is 240
+                }
+            );
+            $("#search-video").submit((e) => {
+                e.preventDefault();
+                search();
+            });
+        });
+    </script>
 
   </body>
 </html>
