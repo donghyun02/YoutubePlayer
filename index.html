@@ -109,7 +109,8 @@
         <div class="col s9">
             <div class="">
                 <input type="checkbox" id="shuffle"><label for="shuffle">셔플</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <input type="checkbox" id="repeat"><label for="repeat">현재곡반복</label>
+                <input type="checkbox" id="repeat"><label for="repeat">현재곡반복</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a href="#" onclick="emptyPlaylistAndCookie();">비우기</a>
             </div>
 
             <br><br>
@@ -587,6 +588,20 @@
 
             }
 
+        }
+
+        function emptyPlaylistAndCookie() {
+            playList = [];
+            videoCnt = 0;
+            nowVideo = 0;
+            isFirst = true;
+
+            insertCookie();
+
+            $('.video-container').empty();
+            $('.video-container').append('<div id="p"></div>');
+
+            $('#box').empty();
         }
 
         jQuery(window).load(function () {
