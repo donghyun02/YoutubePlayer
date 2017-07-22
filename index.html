@@ -57,7 +57,7 @@
             justify-content: flex-start;
         }
 
-        #modal-a:hover {
+        #back:hover {
             background-color: white;
         }
 
@@ -148,230 +148,175 @@
         var videoId = [];
         var cnt = 0;
         var isFirst = true;
-        var nowLoading = false;
 
         initYoutubeAPI();
 
         function search() {
-            var q = $('#query').val();
-            var videoId = [];
-
+            var query = $('#query').val();
             cnt = 0;
             videoId = [];
-            $('.video-list').remove();
-            $('.modal').remove();
 
+            clearSearchBox();
             appendLoading($('#slide-out'));
+            getVideoIdsByQuery(query, getVideoDataByIds);
+        }
 
+        function onClickBasketButton(basket, video) {
+            basket.on('click', (e) => {
+                var id = e.target.id.split('basket')[1];
+                appendVideoToList(video);
+                onClickSongAtList($(`#list${videoCnt}`));
+                onClickCloseButton($(`#close${videoCnt}`));
+                addVideo(videoId[id]);
+            });
+        }
+
+        function appendVideoToList(video) {
+            $('#box').append(`
+                <div id="box-list" class="box${videoCnt} card-panel">
+                    <div id="close">
+                        <img id="close${videoCnt}" src="x.png" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                    </div>
+                    <div id="song-title">
+                        <span id="list${videoCnt}" style="cursor: pointer;">${video.snippet.title}</span>
+                    </div>
+                </div>
+            `);
+        }
+
+        function appendVideoAtSearchBox(video) {
+            var duration = video.contentDetails.duration.split('PT')[1];
+            var hour = getTimeForVideo(duration)[0];
+            var min = getTimeForVideo(duration)[1];
+            var sec = getTimeForVideo(duration)[2];
+            appendVideoCard($('#slide-out'), video, hour, min, sec);
+            onClickBasketButton($(`#basket${cnt}`), video);
+            cnt++;
+        }
+
+        function removeSongAtList(id) {
+            playList.splice(Number(id), 1);
+            $(`.box${id}`).remove();
+            for (var i = id + 1; i < videoCnt; i++) {
+                $(`.box${i}`).attr('class', `box${i - 1} card-panel`);
+                $(`#close${i}`).attr('id', `close${i - 1}`);
+                $(`#list${i}`).attr('id', `list${i - 1}`);
+            }
+            videoCnt--;
+            if(id == nowVideo) {
+                if(!videoCnt) {
+                    $('.video-container').empty();
+                    $('.video-container').append('<div id="p"></div>');
+                }
+                else {
+                    nowVideo--;
+                    nextVideo();
+                }
+            }
+            if(id < nowVideo) nowVideo--;
+            if(videoCnt == 0) isFirst = true;
+            insertCookie();
+        }
+
+        function onClickCloseButton(close) {
+            close.on('click', (e) => {
+                var id = e.target.id.split('close')[1];
+                removeSongAtList(id);
+            });
+        }
+
+        function getVideoDataByIds(id) {
             $.ajax({
-                url: `https://www.googleapis.com/youtube/v3/search?q=${q}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet&type=video&maxResults=50`,
+                url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
                 dataType: 'json',
                 type: 'GET',
-                success: (result) => {
+                async: false,
+                success: (videos) => {
+                    for(var i in videos.items) {
+                        appendVideoAtSearchBox(videos.items[i]);
+                        saveVideoId(videos.items[i].id);
+                    }
+                    finishLoading();
+                }
+            });
+        }
+
+        function onClickSongAtList(song) {
+            song.on('click', (e) => {
+                restoreColor(nowVideo);
+                nowVideo = e.target.id.split('list')[1];
+                player.loadVideoById(playList[nowVideo]);
+                changeColor(nowVideo);
+            });
+        }
+
+        function appendVideoCard(element, video, h, m, s) {
+            element.append(`
+                <li class="video-list card-panel">
+                    <div id="">
+                        <div id="list">
+                            <div id="thumbnail">
+                                <img src="${video.snippet.thumbnails.default.url}" />
+                            </div>
+                            <div id="info" style="margin-left: 10px;">
+                                <div id="title" class="title${cnt}">
+                                    ${video.snippet.title}
+                                </div>
+                                <div id="publisher" class="publisher${cnt}">
+                                    재생시간 : ${h}:${m}:${s} / 게시자 : ${video.snippet.channelTitle}
+                                </div>
+                            </div>
+                            <div id="take-music">
+                                <a id="back"><img src="basket.png" class="basket" id="basket${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)" /></a>
+                            </div>
+                            <div id="play-now">
+                                <img src="play.png" class="play" id="play${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" />
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            `);
+        }
+
+        function saveVideoId(id) {
+            videoId.push(id);
+        }
+
+        function getVideoIdsByQuery(query, handleData) {
+            $.ajax({
+                url: `https://www.googleapis.com/youtube/v3/search?q=${query}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet&type=video&maxResults=50`,
+                dataType: 'json',
+                type: 'GET',
+                success: (videos) => {
                     var id = '';
-
-                    for(var i = 0; i < result.items.length; i++) {
-
-                        if(i != 0) {
-                            id = id + ',';
-                        }
-
-                        id = id + result.items[i].id.videoId;
-
+                    for(var i = 0; i < videos.items.length; i++) {
+                        if(i != 0) id = id + ',';
+                        id = id + videos.items[i].id.videoId;
                     }
+                    handleData(id);
+                }
+            });
+        }
 
-                    $.ajax({
-                        url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
-                        dataType: 'json',
-                        type: 'GET',
-                        async: false,
-                        success: (result2) => {
+        function getTimeForVideo(duration) {
+            var hms = [0, 0, 0];
+            if(duration.indexOf('H') != -1) {
+                hms[0] = duration.split('H')[0];
+                duration = duration.split('H')[1];
+            }
+            if(duration.indexOf('M') != -1) {
+                hms[1] = duration.split('M')[0];
+                duration = duration.split('M')[1];
+            }
+            if(duration.indexOf('S') != -1) {
+                hms[2] = duration.split('S')[0];
+            }
+            return hms;
+        }
 
-                            for(var i = 0; i < result.items.length; i++) {
-                                var h = m = s = 0;
-                                var duration = result2.items[i].contentDetails.duration.split('PT')[1];
-
-                                if(duration.indexOf('H') != -1) {
-                                    h = duration.split('H')[0];
-                                    duration = duration.split('H')[1];
-                                }
-
-                                if(duration.indexOf('M') != -1) {
-                                    m = duration.split('M')[0];
-                                    duration = duration.split('M')[1];
-                                }
-
-                                if(duration.indexOf('S') != -1) {
-                                    s = duration.split('S')[0];
-                                }
-
-                                videoId.push(result2.items[i].id);
-
-                                finishLoading();
-
-                                //검색결과 출력
-                                $('#slide-out').append(`
-                                    <li class="video-list card-panel">
-                                        <div id="">
-                                            <div id="list">
-                                                <div id="thumbnail">
-                                                    <img src="${result2.items[i].snippet.thumbnails.default.url}" />
-                                                </div>
-                                                <div id="info" style="margin-left: 10px;">
-                                                    <div id="title" class="title${cnt}">
-                                                        ${result2.items[i].snippet.title}
-                                                    </div>
-                                                    <div id="publisher" class="publisher${cnt}">
-                                                        재생시간 : ${h}:${m}:${s} / 게시자 : ${result2.items[i].snippet.channelTitle}
-                                                    </div>
-                                                </div>
-                                                <div id="take-music">
-                                                    <a id="modal-a"><img src="basket.png" class="basket${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" /></a>
-                                                </div>
-                                                <div id="play-now">
-                                                    <img class="take" id="${cnt}" src="play.png" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    `);
-
-                                    $(`.basket${cnt}`).on('click', (e) => {
-                                        console.log(result.items[Number($(e.target).attr('class').split('basket')[1])].snippet.title);
-                                        console.log($(e.target).attr('class').split('basket')[1]);
-                                        $('#box').append(`
-                                            <div id="box-list" class="box${videoCnt} card-panel">
-                                                <div id="close">
-                                                    <img src="x.png" class="${videoCnt}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
-                                                </div>
-                                                <div id="song-title">
-                                                    <span id="list${videoCnt}" style="cursor: pointer;">${result.items[Number($(e.target).attr('class').split('basket')[1])].snippet.title}</span>
-                                                </div>
-                                            </div>
-                                        `);
-
-                                        $(`#list${videoCnt}`).on('click', (e) => {
-                                            restoreColor(nowVideo);
-                                            nowVideo = e.target.id.split('list')[1];
-                                            player.loadVideoById(playList[nowVideo]);
-                                            changeColor(nowVideo);
-                                        });
-
-                                        $(`.${videoCnt}`).on('click', (e2) => {
-                                            //지울 영상을 배열에서 삭제
-                                            playList.splice(Number($(e2.target).attr('class')), 1);
-
-                                            $(`.box${$(e2.target).attr('class')}`).remove();
-
-                                            //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-                                            for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
-                                                $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
-                                                $(`.${j}`).attr('class', `${j - 1}`);
-                                                $(`#list${j}`).attr('id', `list${j - 1}`);
-                                            }
-
-                                            videoCnt--;
-
-                                            //현재 시청중인 영상을 지울경우
-                                            if($(e2.target).attr('class') == nowVideo) {
-
-                                                if(!videoCnt) {
-                                                    $('.video-container').empty();
-                                                    $('.video-container').append('<div id="p"></div>');
-                                                }
-
-                                                else {
-                                                    nowVideo--;
-                                                    nextVideo();
-                                                }
-
-                                            }
-
-                                            if($(e2.target).attr('class') < nowVideo) {
-                                                nowVideo--;
-                                            }
-
-                                            if(videoCnt == 0) {
-                                                isFirst = true;
-                                            }
-
-                                            insertCookie();
-
-                                        });
-                                        addVideo(videoId[e.target.id]);
-                                    });
-
-                                    //추가버튼을 눌렀을 경우
-                                    $(`#${cnt}`).on('click', (e) => {
-                                        $('#box').append(`
-                                            <div id="box-list" class="box${videoCnt} card-panel">
-                                                <div id="close">
-                                                    <img src="x.png" class="${videoCnt}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
-                                                </div>
-                                                <div id="song-title">
-                                                    <span id="list${videoCnt}" style="cursor: pointer;">${result.items[Number(e.target.id)].snippet.title}</span>
-                                                </div>
-                                            </div>
-                                        `);
-
-                                        $(`#list${videoCnt}`).on('click', (e) => {
-                                            restoreColor(nowVideo);
-                                            nowVideo = e.target.id.split('list')[1];
-                                            player.loadVideoById(playList[nowVideo]);
-                                            changeColor(nowVideo);
-                                        });
-
-                                        $(`.${videoCnt}`).on('click', (e2) => {
-                                            //지울 영상을 배열에서 삭제
-                                            playList.splice(Number($(e2.target).attr('class')), 1);
-
-                                            $(`.box${$(e2.target).attr('class')}`).remove();
-
-                                            //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-                                            for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
-                                                $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
-                                                $(`.${j}`).attr('class', `${j - 1}`);
-                                                $(`#list${j}`).attr('id', `list${j - 1}`);
-                                            }
-
-                                            videoCnt--;
-
-                                            //현재 시청중인 영상을 지울경우
-                                            if($(e2.target).attr('class') == nowVideo) {
-
-                                                if(!videoCnt) {
-                                                    $('.video-container').empty();
-                                                    $('.video-container').append('<div id="p"></div>');
-                                                }
-
-                                                else {
-                                                    nowVideo--;
-                                                    nextVideo();
-                                                }
-
-                                            }
-
-                                            if($(e2.target).attr('class') < nowVideo) {
-                                                nowVideo--;
-                                            }
-
-                                            if(videoCnt == 0) {
-                                                isFirst = true;
-                                            }
-
-                                            insertCookie();
-
-                                        });
-                                        addVideo(videoId[e.target.id]);
-                                    });
-
-                                    cnt++;
-
-                        }
-                    }
-                });
-
-            }});
+        function clearSearchBox() {
+            $('.video-list').remove();
+            $('.modal').remove();
         }
 
         function initYoutubeAPI() {
@@ -398,6 +343,8 @@
         function addVideo(video) {
             playList.push(video);
             videoCnt++;
+            console.log(video);
+            console.log(videoCnt);
 
             if (isFirst) {
                 player = new YT.Player('p', {
