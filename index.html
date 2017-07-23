@@ -341,12 +341,10 @@
 
         function onPlayerReady(event) {
             event.target.playVideo();
-
             if (isFirst) {
                 isFirst = false;
                 changeColor(0);
             }
-
         }
 
         function onPlayerStateChange(event) {
@@ -356,29 +354,15 @@
         function addVideo(video) {
             playList.push(video);
             videoCnt++;
-
-            if (isFirst) {
-                player = new YT.Player('p', {
-                    width: 853,
-                    height: 480,
-                    videoId: video,
-                    events: {
-                        'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
-                        'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
-                    }
-                });
-            }
-
+            playerInit();
             insertCookie();
         }
 
         function nextVideo() {
             if (videoCnt) {
-
                 if(document.getElementById('repeat').checked) {
                     player.loadVideoById(playList[nowVideo]);
                 }
-
                 else if(document.getElementById('shuffle').checked){
                     var randomInt = Math.floor( (Math.random() * (videoCnt - 1 - 0 + 1)) + 0 );
                     restoreColor(nowVideo);
@@ -386,7 +370,6 @@
                     nowVideo = randomInt;
                     changeColor(nowVideo);
                 }
-
                 else {
                     restoreColor(nowVideo);
                     nowVideo++;
@@ -470,114 +453,103 @@
 
         function cookieToPlayList() {
             var data = getCookie('list').split(' ');
-
+            var id = '';
+            videoCnt = data.length - 1;
             if(data != '') {
-
-                for(var i = 0; i < data.length - 1; i++) {
-                    playList.push(data[i])
-                }
-
-                videoCnt = data.length - 1;
-
-                var id = '';
-
-                for(var i = 0; i < data.length - 1; i++) {
-
-                    if(i != 0) {
-                        id = id + ',';
-                    }
-
+                for(var i = 0; i < videCnt; i++) {
+                    if(i != 0) id = id + ',';
+                    playList.push(data[i]);
                     id = id + data[i];
-
                 }
-
-                $.ajax({
-                    url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
-                    dataType: 'json',
-                    type: 'GET',
-                    async: false,
-                    success: (result) => {
-
-                        for(var v = 0; v < data.length - 1; v++) {
-                            $('#box').append(`
-                                <div id="box-list" class="box${v} card-panel">
-                                    <div id="close">
-                                        <img src="x.png" class="${v}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
-                                    </div>
-                                    <div id="song-title">
-                                        <span id="list${v}" style="cursor: pointer;">${result.items[v].snippet.title}</span>
-                                    </div>
-                                </div>
-                            `);
-
-                            $(`#list${v}`).on('click', (e) => {
-                                restoreColor(nowVideo);
-                                nowVideo = e.target.id.split('list')[1];
-                                player.loadVideoById(playList[nowVideo]);
-                                changeColor(nowVideo);
-                            });
-
-                            $(`.${v}`).on('click', (e2) => {
-                                //지울 영상을 배열에서 삭제
-                                playList.splice(Number($(e2.target).attr('class')), 1);
-
-                                $(`.box${$(e2.target).attr('class')}`).remove();
-
-                                //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-                                for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
-                                    $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
-                                    $(`.${j}`).attr('class', `${j - 1}`);
-                                    $(`#list${j}`).attr('id', `list${j - 1}`);
-                                }
-
-                                videoCnt--;
-
-                                //현재 시청중인 영상을 지울경우
-                                if($(e2.target).attr('class') == nowVideo) {
-
-                                    if(!videoCnt) {
-                                        $('.video-container').empty();
-                                        $('.video-container').append('<div id="p"></div>');
-                                    }
-
-                                    else {
-                                        nowVideo--;
-                                        nextVideo();
-                                    }
-
-                                }
-
-                                if($(e2.target).attr('class') < nowVideo) {
-                                    nowVideo--;
-                                }
-
-                                if(videoCnt == 0) {
-                                    isFirst = true;
-                                }
-
-                                insertCookie();
-                            });
-
-                        }
-                    }
-
-                });
-
-
-                if (isFirst) {
-                    player = new YT.Player('p', {
-                        width: 853,
-                        height: 480,
-                        videoId: playList[0],
-                        events: {
-                            'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
-                            'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
-                        }
-                    });
-                }
-
+                getVideoDataByIds(id);
+                playerInit();
+                // $.ajax({
+                //     url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
+                //     dataType: 'json',
+                //     type: 'GET',
+                //     async: false,
+                //     success: (result) => {
+                //
+                //         for(var v = 0; v < data.length - 1; v++) {
+                //             $('#box').append(`
+                //                 <div id="box-list" class="box${v} card-panel">
+                //                     <div id="close">
+                //                         <img src="x.png" class="${v}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                //                     </div>
+                //                     <div id="song-title">
+                //                         <span id="list${v}" style="cursor: pointer;">${result.items[v].snippet.title}</span>
+                //                     </div>
+                //                 </div>
+                //             `);
+                //
+                //             $(`#list${v}`).on('click', (e) => {
+                //                 restoreColor(nowVideo);
+                //                 nowVideo = e.target.id.split('list')[1];
+                //                 player.loadVideoById(playList[nowVideo]);
+                //                 changeColor(nowVideo);
+                //             });
+                //
+                //             $(`.${v}`).on('click', (e2) => {
+                //                 //지울 영상을 배열에서 삭제
+                //                 playList.splice(Number($(e2.target).attr('class')), 1);
+                //
+                //                 $(`.box${$(e2.target).attr('class')}`).remove();
+                //
+                //                 //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
+                //                 for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
+                //                     $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
+                //                     $(`.${j}`).attr('class', `${j - 1}`);
+                //                     $(`#list${j}`).attr('id', `list${j - 1}`);
+                //                 }
+                //
+                //                 videoCnt--;
+                //
+                //                 //현재 시청중인 영상을 지울경우
+                //                 if($(e2.target).attr('class') == nowVideo) {
+                //
+                //                     if(!videoCnt) {
+                //                         $('.video-container').empty();
+                //                         $('.video-container').append('<div id="p"></div>');
+                //                     }
+                //
+                //                     else {
+                //                         nowVideo--;
+                //                         nextVideo();
+                //                     }
+                //
+                //                 }
+                //
+                //                 if($(e2.target).attr('class') < nowVideo) {
+                //                     nowVideo--;
+                //                 }
+                //
+                //                 if(videoCnt == 0) {
+                //                     isFirst = true;
+                //                 }
+                //
+                //                 insertCookie();
+                //             });
+                //
+                //         }
+                //     }
+                //
+                // });
             }
 
+        }
+
+        function playerInit() {
+            if (isFirst) {
+                player = new YT.Player('p', {
+                    width: 853,
+                    height: 480,
+                    videoId: playList[0],
+                    events: {
+                        'onReady': onPlayerReady, // 플레이어 로드가 완료되고 API 호출을 받을 준비가 될 때마다 실행
+                        'onStateChange': onPlayerStateChange // 플레이어의 상태가 변경될 때마다 실행
+                    }
+                });
+            }
         }
 
         function emptyPlaylistAndCookie() {
