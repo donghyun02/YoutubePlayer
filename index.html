@@ -145,8 +145,6 @@
         var player;
         var isFirst = true;
 
-        initYoutubeAPI();
-
         function search() {
             var query = $('#query').val();
             cnt = 0;
@@ -165,6 +163,25 @@
                 onClickCloseButton($(`#close${videoCnt}`));
                 addVideo(videoId[id]);
             });
+        }
+
+        function onClickPlayButton(play, video) {
+            play.on('click', (e) => {
+                var id = e.target.id.split('play')[1];
+                appendVideoToList(video);
+                onClickSongAtList($(`#list${videoCnt}`));
+                onClickCloseButton($(`#close${videoCnt}`));
+                addVideo(videoId[id]);
+                var index = playList.length - 1;
+                playVideoByIndex(index);
+            });
+        }
+
+        function playVideoByIndex(index) {
+            restoreColor(nowVideo);
+            nowVideo = index;
+            player.loadVideoById(playList[index]);
+            changeColor(nowVideo);
         }
 
         function appendVideoToList(video) {
@@ -187,6 +204,7 @@
             var sec = getTimeForVideo(duration)[2];
             appendVideoCard($('#slide-out'), video, hour, min, sec);
             onClickBasketButton($(`#basket${cnt}`), video);
+            onClickPlayButton($(`#play${cnt}`), video);
             cnt++;
         }
 
@@ -240,10 +258,8 @@
 
         function onClickSongAtList(song) {
             song.on('click', (e) => {
-                restoreColor(nowVideo);
-                nowVideo = e.target.id.split('list')[1];
-                player.loadVideoById(playList[nowVideo]);
-                changeColor(nowVideo);
+                var index = e.target.id.split('list')[1];
+                playVideoByIndex(index);
             });
         }
 
@@ -583,6 +599,7 @@
         });
 
         $(document).ready(() => {
+            initYoutubeAPI();
             $('#button-collapse').sideNav({
                     menuWidth: 800, // Default is 240
                 }
