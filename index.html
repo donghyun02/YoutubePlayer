@@ -140,13 +140,9 @@
     </ul>
 
     <script>
-        var playList = [];
-        var videoCnt = 0;
-        var nowVideo = 0;
-        var i = 0;
+        var playList = videoId = [];
+        var videoCnt = nowVideo = cnt = 0;
         var player;
-        var videoId = [];
-        var cnt = 0;
         var isFirst = true;
 
         initYoutubeAPI();
@@ -197,7 +193,8 @@
         function removeSongAtList(id) {
             playList.splice(Number(id), 1);
             $(`.box${id}`).remove();
-            for (var i = id + 1; i < videoCnt; i++) {
+            for(var i = Number(id) + 1; i < videoCnt; i++) {
+                console.log('index: ' + i);
                 $(`.box${i}`).attr('class', `box${i - 1} card-panel`);
                 $(`#close${i}`).attr('id', `close${i - 1}`);
                 $(`#list${i}`).attr('id', `list${i - 1}`);
@@ -343,8 +340,6 @@
         function addVideo(video) {
             playList.push(video);
             videoCnt++;
-            console.log(video);
-            console.log(videoCnt);
 
             if (isFirst) {
                 player = new YT.Player('p', {
@@ -588,7 +583,6 @@
         });
 
         $(document).ready(() => {
-
             $('#button-collapse').sideNav({
                     menuWidth: 800, // Default is 240
                 }
