@@ -240,7 +240,7 @@
             });
         }
 
-        function getVideoDataByIds(id) {
+        function getVideoDataByIds(id, option=1) {
             $.ajax({
                 url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
                 dataType: 'json',
@@ -248,7 +248,9 @@
                 async: false,
                 success: (videos) => {
                     for(var i in videos.items) {
-                        appendVideoAtSearchBox(videos.items[i]);
+                        if(option == 1) appendVideoAtSearchBox(videos.items[i]);
+                        else if(option == 2) appendVideoToList(videos.items[i]);
+                        else console.log('error');
                         saveVideoId(videos.items[i].id);
                     }
                     finishLoading();
@@ -461,79 +463,8 @@
                     playList.push(data[i]);
                     id = id + data[i];
                 }
-                getVideoDataByIds(id);
+                getVideoDataByIds(id, 2);
                 playerInit();
-                // $.ajax({
-                //     url: `https://www.googleapis.com/youtube/v3/videos?id=${id}&key=AIzaSyBG2XG-ACdIgQRBBf2wH4yjHyh6mIHvUqU&part=snippet,contentDetails`,
-                //     dataType: 'json',
-                //     type: 'GET',
-                //     async: false,
-                //     success: (result) => {
-                //
-                //         for(var v = 0; v < data.length - 1; v++) {
-                //             $('#box').append(`
-                //                 <div id="box-list" class="box${v} card-panel">
-                //                     <div id="close">
-                //                         <img src="x.png" class="${v}" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
-                //                     </div>
-                //                     <div id="song-title">
-                //                         <span id="list${v}" style="cursor: pointer;">${result.items[v].snippet.title}</span>
-                //                     </div>
-                //                 </div>
-                //             `);
-                //
-                //             $(`#list${v}`).on('click', (e) => {
-                //                 restoreColor(nowVideo);
-                //                 nowVideo = e.target.id.split('list')[1];
-                //                 player.loadVideoById(playList[nowVideo]);
-                //                 changeColor(nowVideo);
-                //             });
-                //
-                //             $(`.${v}`).on('click', (e2) => {
-                //                 //지울 영상을 배열에서 삭제
-                //                 playList.splice(Number($(e2.target).attr('class')), 1);
-                //
-                //                 $(`.box${$(e2.target).attr('class')}`).remove();
-                //
-                //                 //지운 영상 뒤에 있는 영상들의 id값을 전부 1씩 감소시킴
-                //                 for (j = Number($(e2.target).attr('class')) + 1; j < videoCnt; j++) {
-                //                     $(`.box${j}`).attr('class', `box${j - 1} card-panel`);
-                //                     $(`.${j}`).attr('class', `${j - 1}`);
-                //                     $(`#list${j}`).attr('id', `list${j - 1}`);
-                //                 }
-                //
-                //                 videoCnt--;
-                //
-                //                 //현재 시청중인 영상을 지울경우
-                //                 if($(e2.target).attr('class') == nowVideo) {
-                //
-                //                     if(!videoCnt) {
-                //                         $('.video-container').empty();
-                //                         $('.video-container').append('<div id="p"></div>');
-                //                     }
-                //
-                //                     else {
-                //                         nowVideo--;
-                //                         nextVideo();
-                //                     }
-                //
-                //                 }
-                //
-                //                 if($(e2.target).attr('class') < nowVideo) {
-                //                     nowVideo--;
-                //                 }
-                //
-                //                 if(videoCnt == 0) {
-                //                     isFirst = true;
-                //                 }
-                //
-                //                 insertCookie();
-                //             });
-                //
-                //         }
-                //     }
-                //
-                // });
             }
 
         }
