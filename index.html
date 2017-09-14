@@ -145,8 +145,23 @@
         var player;
         var isFirst = true;
 
-        function search() {
-            var query = $('#query').val();
+        jQuery(window).load(function () {
+            cookieToPlayList();
+        });
+
+        $(document).ready(() => {
+            initYoutubeAPI();
+            $('#button-collapse').sideNav({
+                    menuWidth: 800, // Default is 240
+                }
+            );
+            $("#search-video").submit((e) => {
+                e.preventDefault();
+                search($('#query').val());
+            });
+        });
+
+        function search(query) {
             cnt = 0;
             videoId = [];
 
@@ -162,6 +177,7 @@
                 onClickSongAtList($(`#list${videoCnt}`));
                 onClickCloseButton($(`#close${videoCnt}`));
                 addVideo(videoId[id]);
+                console.log(`onClickBasketButton - videoId[id]: ${videoId[id]}`);
             });
         }
 
@@ -171,6 +187,7 @@
                 appendVideoToList(video);
                 onClickSongAtList($(`#list${videoCnt}`));
                 onClickCloseButton($(`#close${videoCnt}`));
+                console.log(`onClickPlayButton - videoId[id]: ${videoId[id]}`);
                 addVideo(videoId[id]);
                 var index = playList.length - 1;
                 playVideoByIndex(index);
@@ -184,20 +201,36 @@
             changeColor(nowVideo);
         }
 
-        function appendVideoToList(video) {
-            $('#box').append(`
-                <div id="box-list" class="box${videoCnt} card-panel">
-                    <div id="close">
-                        <img id="close${videoCnt}" src="x.png" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+        function appendVideoToList(video, number=-1) {
+            if(number == -1) {
+                $('#box').append(`
+                    <div id="box-list" class="box${videoCnt} card-panel">
+                        <div id="close">
+                            <img id="close${videoCnt}" src="/static/youtube_player/x.png" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                        </div>
+                        <div id="song-title">
+                            <span id="list${videoCnt}" style="cursor: pointer;">${video.snippet.title}</span>
+                        </div>
                     </div>
-                    <div id="song-title">
-                        <span id="list${videoCnt}" style="cursor: pointer;">${video.snippet.title}</span>
+                `);
+            }
+            else {
+                $('#box').append(`
+                    <div id="box-list" class="box${number} card-panel">
+                        <div id="close">
+                            <img id="close${number}" src="/static/youtube_player/x.png" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                        </div>
+                        <div id="song-title">
+                            <span id="list${number}" style="cursor: pointer;">${video.snippet.title}</span>
+                        </div>
                     </div>
-                </div>
-            `);
+                `);
+                onClickSongAtList($(`#list${number}`));
+                onClickCloseButton($(`#close${number}`));
+            }
         }
 
-        function appendVideoAtSearchBox(video) {
+        function appendVideoToSearchBox(video) {
             var duration = video.contentDetails.duration.split('PT')[1];
             var hour = getTimeForVideo(duration)[0];
             var min = getTimeForVideo(duration)[1];
@@ -231,6 +264,7 @@
             if(id < nowVideo) nowVideo--;
             if(videoCnt == 0) isFirst = true;
             insertCookie();
+            console.log(`removeSongAtList - playList: ${playList}`);
         }
 
         function onClickCloseButton(close) {
@@ -248,8 +282,8 @@
                 async: false,
                 success: (videos) => {
                     for(var i in videos.items) {
-                        if(option == 1) appendVideoAtSearchBox(videos.items[i]);
-                        else if(option == 2) appendVideoToList(videos.items[i]);
+                        if(option == 1) appendVideoToSearchBox(videos.items[i]);
+                        else if(option == 2) appendVideoToList(videos.items[i], i);
                         else console.log('error');
                         saveVideoId(videos.items[i].id);
                     }
@@ -282,10 +316,10 @@
                                 </div>
                             </div>
                             <div id="take-music">
-                                <a id="back"><img src="basket.png" class="basket" id="basket${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)" /></a>
+                                <a id="back"><img src="/static/youtube_player/basket.png" class="basket" id="basket${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)" /></a>
                             </div>
                             <div id="play-now">
-                                <img src="play.png" class="play" id="play${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" />
+                                <img src="/static/youtube_player/play.png" class="play" id="play${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" />
                             </div>
                         </div>
                     </div>
@@ -358,6 +392,7 @@
             videoCnt++;
             playerInit();
             insertCookie();
+            console.log(`addVideo - playList: ${playList}`);
         }
 
         function nextVideo() {
@@ -380,6 +415,9 @@
                     changeColor(nowVideo);
                 }
             }
+            console.log(`nextVideo - videoCnt: ${videoCnt}`);
+            console.log(`nextVideo - cnt: ${cnt}`);
+            console.log(`nextVideo - nowVideo: ${nowVideo}`);
         }
 
         function prevVideo() {
@@ -456,6 +494,8 @@
         function cookieToPlayList() {
             var data = getCookie('list').split(' ');
             var id = '';
+            playList = [];
+            nowVideo = 0;
             videoCnt = data.length - 1;
             if(data != '') {
                 for(var i = 0; i < videoCnt; i++) {
@@ -463,6 +503,7 @@
                     playList.push(data[i]);
                     id = id + data[i];
                 }
+                console.log(`cookieToPlayList - id: ${id}`);
                 getVideoDataByIds(id, 2);
                 playerInit();
             }
@@ -486,6 +527,7 @@
         function emptyPlaylistAndCookie() {
             playList = [];
             videoCnt = 0;
+            cnt = 0;
             nowVideo = 0;
             isFirst = true;
 
@@ -500,22 +542,6 @@
         function focusToSearchBox() {
             $('#query').focus();
         }
-
-        jQuery(window).load(function () {
-            cookieToPlayList();
-        });
-
-        $(document).ready(() => {
-            initYoutubeAPI();
-            $('#button-collapse').sideNav({
-                    menuWidth: 800, // Default is 240
-                }
-            );
-            $("#search-video").submit((e) => {
-                e.preventDefault();
-                search();
-            });
-        });
     </script>
 
   </body>
