@@ -4,15 +4,17 @@
         <title>Youtube Player</title>
         <meta charset="utf-8">
         <script src="https://code.jquery.com/jquery-2.2.3.min.js"></script>
-        <!--Import Google Icon Font-->
-        <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <!--Import materialize.css-->
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js"></script>
         <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" type="text/css" href="http://api.typolink.co.kr/css?family=RixSGo+L:400" />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script>
+        <script src="https://smtpjs.com/smtp.js"></script>
 
     <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
 
         body {
         	font-family: 'RixSGo L';
@@ -72,6 +74,25 @@
             border-bottom: 2px solid #2196F3;
         }
 
+        .chip {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+        }
+
+        .chip span {
+            cursor: pointer;
+        }
+
+        textarea.materialize-textarea:focus:not([readonly])+label {
+            color: #2196F3;
+        }
+
+        textarea.materialize-textarea:focus:not([readonly]) {
+            border-bottom: 1px solid #2196F3;
+            box-shadow: 0 1px 0 0 #2196F3;
+        }
+
     </style>
 
     </head>
@@ -81,7 +102,7 @@
         <div class="nav-wrapper">
             <a href="/" class="brand-logo" style="margin-left: 20px;">Youtube Player</a>
             <ul id="nav-mobile" class="right hide-on-med-and-down">
-                <li><a href="#" data-activates="slide-out" id="button-collapse" onclick="focusToSearchBox()"><i class="material-icons">menu</i></a></li>
+                <li><a href="" data-activates="slide-out" id="button-collapse" onclick="focusToSearchBox()"><i class="material-icons">menu</i></a></li>
             </ul>
         </div>
     </nav>
@@ -110,7 +131,7 @@
             <div class="">
                 <input type="checkbox" id="shuffle"><label for="shuffle">셔플</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <input type="checkbox" id="repeat"><label for="repeat">현재곡반복</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <a href="#" onclick="emptyPlaylistAndCookie();">비우기</a>
+                <a href="" onclick="emptyPlaylistAndCookie();">비우기</a>
             </div>
 
             <br><br>
@@ -122,6 +143,10 @@
             </div>
         </div>
 
+    </div>
+
+    <div class="chip">
+        <span><a class="modal-trigger" id="feedback" data-target="modal1" href="#modal1">Feedback</a></span>
     </div>
 
     <ul id="slide-out" class="side-nav">
@@ -138,6 +163,18 @@
             </form>
         </li>
     </ul>
+
+    <div id="modal1" class="modal">
+        <div class="modal-content">
+            <div class="input-field">
+                <textarea id="textarea1" class="materialize-textarea"></textarea>
+                <label for="textarea1">피드백을 적어주세요</label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" id="feedback-submit" class="modal-action modal-close waves-effect waves-blue btn-flat">보내기</a>
+        </div>
+    </div>
 
     <script>
         var playList = videoId = [];
@@ -159,6 +196,8 @@
                 e.preventDefault();
                 search($('#query').val());
             });
+            $('.modal').modal();
+            onClickFeedbackSubmit($('#feedback-submit'));
         });
 
         function search(query) {
@@ -365,7 +404,6 @@
 
         function clearSearchBox() {
             $('.video-list').remove();
-            $('.modal').remove();
         }
 
         function initYoutubeAPI() {
@@ -541,6 +579,19 @@
 
         function focusToSearchBox() {
             $('#query').focus();
+        }
+
+        function onClickFeedbackSubmit(element) {
+            element.on('click', (e) => {
+                Email.send(
+                    "feedback.yt.player@gmail.com",
+                    "dhkim20157@gmail.com",
+                    "Youtube Player Feedback",
+                    $('#textarea1').val(),
+                    {token: "b3c43c27-41e8-40ef-9182-d4970031bacc"}
+                );
+                $('#textarea1').val("");
+            });
         }
     </script>
 
