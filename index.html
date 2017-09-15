@@ -29,12 +29,6 @@
           overflow-y: scroll;
         }
 
-        /* label underline focus color */
-        .input-field input[type=text]:focus {
-            border-bottom: 1px solid #2196F3;
-            box-shadow: 0 1px 0 0 #2196F3;
-        }
-
         input:-webkit-autofill {
             -webkit-box-shadow: 0 0 0 1000px white inset;
         }
@@ -59,13 +53,7 @@
             justify-content: flex-start;
         }
 
-        #back:hover {
-            background-color: white;
-        }
-
         .waves-effect.waves-blue .waves-ripple {
-         /* The alpha value allows the text and background color
-         of the button to still show through. */
           background-color: #2196F3;
         }
 
@@ -89,15 +77,27 @@
             color: white;
         }
 
-        textarea.materialize-textarea:focus:not([readonly])+label {
-            color: #2196F3;
-        }
-
+        input:not([type]):focus:not([readonly]),
+        input[type=text]:not(.browser-default):focus:not([readonly]),
+        input[type=password]:not(.browser-default):focus:not([readonly]),
+        input[type=email]:not(.browser-default):focus:not([readonly]),
+        input[type=url]:not(.browser-default):focus:not([readonly]),
+        input[type=time]:not(.browser-default):focus:not([readonly]),
+        input[type=date]:not(.browser-default):focus:not([readonly]),
+        input[type=datetime]:not(.browser-default):focus:not([readonly]),
+        input[type=datetime-local]:not(.browser-default):focus:not([readonly]),
+        input[type=tel]:not(.browser-default):focus:not([readonly]),
+        input[type=number]:not(.browser-default):focus:not([readonly]),
+        input[type=search]:not(.browser-default):focus:not([readonly]),
         textarea.materialize-textarea:focus:not([readonly]) {
             border-bottom: 1px solid #2196F3;
+            -webkit-box-shadow: 0 1px 0 0 #2196F3;
             box-shadow: 0 1px 0 0 #2196F3;
         }
 
+        textarea.materialize-textarea:focus:not([readonly])+label {
+            color: #2196F3;
+        }
     </style>
 
     </head>
@@ -250,7 +250,7 @@
                 $('#box').append(`
                     <div id="box-list" class="box${videoCnt} card-panel">
                         <div id="close">
-                            <img id="close${videoCnt}" src="/static/youtube_player/x.png" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                            <i class="material-icons" id="close${videoCnt}" style="cursor: pointer; margin-left: -20px; margin-top: -30px;">clear</i>
                         </div>
                         <div id="song-title">
                             <span id="list${videoCnt}" style="cursor: pointer;">${video.snippet.title}</span>
@@ -262,7 +262,7 @@
                 $('#box').append(`
                     <div id="box-list" class="box${number} card-panel">
                         <div id="close">
-                            <img id="close${number}" src="/static/youtube_player/x.png" style="width: 10px; height: 10px; margin-top: -10px; margin-left: -10px; cursor: pointer;"/>
+                            <i class="material-icons" id="close${number}" style="cursor: pointer; margin-left: -20px; margin-top: -30px;">clear</i>
                         </div>
                         <div id="song-title">
                             <span id="list${number}" style="cursor: pointer;">${video.snippet.title}</span>
@@ -360,10 +360,10 @@
                                 </div>
                             </div>
                             <div id="take-music">
-                                <a id="back"><img src="/static/youtube_player/basket.png" class="basket" id="basket${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)" /></a>
+                                <i class="basket material-icons" id="basket${cnt}" style="margin-left: 30px; margin-top: 35px; cursor: pointer;" onclick="Materialize.toast('Added!', 1000)">add</i>
                             </div>
                             <div id="play-now">
-                                <img src="/static/youtube_player/play.png" class="play" id="play${cnt}" style="width: 30px; height: 30px; margin-top: 30px; cursor: pointer;" />
+                                <i class="play material-icons" id="play${cnt}" style="margin-left: 30px; margin-top: 35px; cursor: pointer">play_arrow</i>
                             </div>
                         </div>
                     </div>
@@ -408,6 +408,7 @@
         }
 
         function clearSearchBox() {
+            finishLoading();
             $('.video-list').remove();
         }
 
