@@ -1,4 +1,4 @@
-# youtube_player
+# YoutubePlayer
 유튜브 영상들을 목록화하여 반복재생
 # Summary 
 * 영상검색   
